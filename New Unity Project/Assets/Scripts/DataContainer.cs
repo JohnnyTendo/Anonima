@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -9,7 +8,7 @@ public class DataContainer : MonoBehaviour
     #region Singleton
     public static DataContainer instance;
 
-    void Awake()
+    private void Awake()
     {
         DataContainer.instance = this;
         userKey = PlayerPrefs.GetString("userKey");
@@ -19,22 +18,30 @@ public class DataContainer : MonoBehaviour
         if (PlayerPrefs.GetString("rijnKeys") != "")
         {
             string[] _rijnKeys = PlayerPrefs.GetString("rijnKeys").Split('|');
-            rijnKeys.AddRange(_rijnKeys);
+            //rijnKeys.AddRange(_rijnKeys);
         }
         if (PlayerPrefs.GetString("rijnIvs") != "")
         {
             string[] _rijnIvs = PlayerPrefs.GetString("rijnIvs").Split('|');
-            rijnIvs.AddRange(_rijnIvs);
+            //rijnIvs.AddRange(_rijnIvs);
+        }
+        if (PlayerPrefs.GetString("keystores") != "")
+        {
+            string[] _keystores = PlayerPrefs.GetString("keystores").Split('|');
+            foreach (string s in _keystores)
+            {
+                Keystore ks = new Keystore();
+                ks.FromString(s);
+                keystores.Add(ks);
+            }
         }
     }
     #endregion
 
-    public string url = "http://178.254.35.6/php/anonima.php";
     public string userKey = "testuser";
     public string accessKey = "test";
     
     public List<Note> notes = new List<Note>();
-
     public TMP_InputField msgTextfield;
 
     [Header("View")]
@@ -42,9 +49,13 @@ public class DataContainer : MonoBehaviour
     public GameObject notePrefab;
 
     [Header("Settings Dialog")]
+    public List<Keystore> keystores;
     public GameObject settingsDialog;
+    public TMP_Dropdown keystoreDropdown;
     public TMP_InputField userTextfield;
     public TMP_InputField accessTextfield;
+    public Slider debugSlider;
+    public bool isDebugging = false;
 
     [Header("QR-Reader Dialog")]
     public GameObject readerDialog;

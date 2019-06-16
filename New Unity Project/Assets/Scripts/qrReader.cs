@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using ZXing;
 using ZXing.QrCode;
@@ -17,7 +15,7 @@ public class qrReader : MonoBehaviour
     public RawImage viewer;
     public AspectRatioFitter fit;
 
-    public void Start()
+    private void Start()
     {
         dc = DataContainer.instance;
         if (!Application.HasUserAuthorization(UserAuthorization.WebCam))
@@ -64,30 +62,37 @@ public class qrReader : MonoBehaviour
         background.rectTransform.localScale = new Vector3(1f, scaleY, 1f);
         int orient = -backCam.videoRotationAngle;
         background.rectTransform.localEulerAngles = new Vector3(0,0,orient);
-        try
+        if (dc.readerDialog.activeSelf)
         {
-            IBarcodeReader barcodeReader = new BarcodeReader();
-            // decode the current frame
-            var result = barcodeReader.Decode(backCam.GetPixels32(), backCam.width, backCam.height);
-            if (result != null)
+            try
             {
-                dc.tester.text = "DECODED TEXT FROM QR: " + result.Text;
-                if (result.Text != "")
+                IBarcodeReader barcodeReader = new BarcodeReader();
+                // decode the current frame
+                var result = barcodeReader.Decode(backCam.GetPixels32(), backCam.width, backCam.height);
+                if (result != null)
                 {
-                    //seperate the values saved in qrCode and assign them
-                    string[] dataSet = result.Text.Split('|');
-                    dc.accessKey = dataSet[0];
-                    dc.accessTextfield.text = dataSet[0];
-                    dc.activeRijnKey = dataSet[1];
-                    dc.activeRijnIv = dataSet[2];
-                    dc.readerDialog.SetActive(false);
+                    dc.tester.text = "DECODED TEXT FROM QR: " + result.Text;
+                    if (result.Text != "")
+                    {
+                        //seperate the values saved in qrCode and assign them
+                        string[] dataSet = result.Text.Split('|');
+                        foreach (string s in dataSet)
+                        {
+                            Debugger.instance.WriteLog("Reader: DataSet --> " + s);
+                        }
+                        dc.accessKey = dataSet[0];
+                        dc.accessTextfield.text = dataSet[0];
+                        dc.activeRijnKey = dataSet[1];
+                        dc.activeRijnIv = dataSet[2];
+                        dc.readerDialog.SetActive(false);
+                    }
                 }
             }
+            catch (Exception ex) { dc.tester.text = ex.Message; }
         }
-        catch (Exception ex) { dc.tester.text = ex.Message; }
     }
 
-    public void GenerateQR()
+    private void GenerateQR()
     {
         var encoded = new Texture2D(256, 256);
         //combine values and generate qrCode

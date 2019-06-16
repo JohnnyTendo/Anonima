@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Security.Cryptography;
-using System.Drawing;
 using UnityEngine;
 
 public class RijndaelScript : MonoBehaviour
@@ -19,16 +16,16 @@ public class RijndaelScript : MonoBehaviour
     #endregion
 
     DataContainer dc;
-    byte[] key;
-    byte[] iv;
+    private byte[] key;
+    private byte[] iv;
 
 
-    public void Start()
+    private void Start()
     {
         dc = DataContainer.instance;
     }
 
-    public void GenerateKeys()
+    private void GenerateKeys()
     {
         using (Rijndael myRijndael = Rijndael.Create())
         {
@@ -39,7 +36,7 @@ public class RijndaelScript : MonoBehaviour
         }
     }
 
-    public static string GetUniqueKey(int size)
+    private static string GetUniqueKey(int size)
     {
         char[] chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
         byte[] data = new byte[size];
@@ -73,7 +70,7 @@ public class RijndaelScript : MonoBehaviour
         }
         catch (Exception e)
         {
-            Console.WriteLine("Error: {0}", e.Message);
+            Debugger.instance.WriteLog("Rijndael error: " + e.Source + e.Message);
             return "";
         }
     }
@@ -82,7 +79,7 @@ public class RijndaelScript : MonoBehaviour
     {
         iv = StringToByteArray(dc.activeRijnIv);
         key = StringToByteArray(dc.activeRijnKey);
-        Debug.Log("Decrypting");
+        Debugger.instance.WriteLog("Rijndael: Decrypting");
         try
         {
             // Create a new instance of the Rijndael class which generates a new key and initialization vector (IV)
@@ -90,22 +87,27 @@ public class RijndaelScript : MonoBehaviour
             {
                 // Decrypts the byte[] and transforms it to a string
                 byte[] encrypted = StringToByteArray(encryptedText);
-                Debug.Log("Byte 1: " + encrypted[0]);
+                string debugText = "";
+                foreach (byte b in encrypted)
+                {
+                    debugText += b.ToString() + " ";
+                }
+                Debugger.instance.WriteLog("Rijndael: Bytes --> " + debugText);
                 string decrypted = DecryptStringFromBytes(encrypted, key, iv);
-                Debug.Log(decrypted);
+                Debugger.instance.WriteLog("Rijndael: Decrypted --> " + decrypted);
                 //Display the original data and the decrypted data
                 return decrypted;
             }
         }
         catch (Exception e)
         {
-            Console.WriteLine("Error: {0}", e.Message);
+            Debugger.instance.WriteLog("Rijndael error: " + e.Source + e.Message);
             return "";
         }
     }
 
     //Main encryption method
-    static byte[] EncryptStringToBytes(string plainText, byte[] Key, byte[] IV)
+    private static byte[] EncryptStringToBytes(string plainText, byte[] Key, byte[] IV)
     {
         // Check arguments to be not null
         if (plainText == null || plainText.Length <= 0)
@@ -137,7 +139,7 @@ public class RijndaelScript : MonoBehaviour
     }
 
     //Main decryption method
-    static string DecryptStringFromBytes(byte[] cipherText, byte[] Key, byte[] IV)
+    private static string DecryptStringFromBytes(byte[] cipherText, byte[] Key, byte[] IV)
     {
         // Check arguments to be not null
         if (cipherText == null || cipherText.Length <= 0)
@@ -169,20 +171,19 @@ public class RijndaelScript : MonoBehaviour
                     }
                 }
             }
-
         }
         return plaintext;
     }
 
     //Converts an array of bytes to a single string
-    public string ByteArrayToString(byte[] bytes)
+    private string ByteArrayToString(byte[] bytes)
     {
         string base64 = Convert.ToBase64String(bytes);
         return base64;
     }
 
     //Converts a string to an array of bytes
-    public byte[] StringToByteArray(string base64)
+    private byte[] StringToByteArray(string base64)
     {
         byte[] bytes = Convert.FromBase64String(base64);
         return bytes;

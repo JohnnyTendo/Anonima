@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-[System.Serializable]
+﻿[System.Serializable]
 public class Note
 {
     public string index;
